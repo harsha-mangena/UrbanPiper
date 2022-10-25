@@ -20,7 +20,7 @@ Activate the virtualenv for your project.
 
 Clone this repository into our local machine.
     
-    $ git clone <Repo_will_be_updated>
+    $ git clone https://github.com/harsha-mangena/UrbanPiper.git
 
 Install project dependencies:
 
