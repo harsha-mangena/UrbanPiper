@@ -66,7 +66,7 @@ class UserRegistrationView(APIView):
                 "user" : serializer.data
             }
 
-            return Response(response)
+            return Response(response, status=status_code)
         
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

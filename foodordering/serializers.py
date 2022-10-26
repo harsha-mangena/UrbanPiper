@@ -17,7 +17,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'name', 'password', 'retype_password', 'email', 'user_type', 'is_active', ]
+        fields = ['name', 'email', 'username','password', 'retype_password', 'user_type', 'is_active', ]
     
     '''
     Validating the password
