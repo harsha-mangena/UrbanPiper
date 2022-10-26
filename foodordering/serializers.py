@@ -1,7 +1,9 @@
+from django.db import DataError
 from rest_framework import serializers
-from .models import User, Store, Item
+from .models import User, Store, Item, Order
 from django.contrib.auth import authenticate, login
 from rest_framework_simplejwt.tokens import RefreshToken
+from .validators import validate_order
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,8 +26,7 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     '''
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('retype_password'):
-            raise serializers.ValidationError("Passwords must be same")
-        
+            raise serializers.ValidationError("Passwords must be same")     
         return attrs 
 
     '''
@@ -80,10 +81,35 @@ class StoreSerializer(serializers.ModelSerializer):
         model = Store
         fields = ('pk', 'name', 'store_address', 'latitude', 'longitude', 'is_active', 'merchant')
 
+    def validate(self, attrs):
+        merchant_id = attrs.get('merchant').id 
+
+        try:
+            is_valid_merchant = User.objects.get(user_type="Merchant", pk=merchant_id)
+
+        except:
+            raise serializers.ValidationError("User is not a merchant, Please contact admin")
+        
+        return attrs
+
+
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ('pk', 'name', 'price', 'description', 'is_active', 'stores')
+        fields = ('pk', 'name', 'price', 'description', 'is_active', 'store')
 
+
+    
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('pk', 'merchant','store', 'items', 'status', 'created_at')
+    
+    def validate(self, attrs):
+        validate_order(attrs)
+        
+        return attrs
+
+        
 
     

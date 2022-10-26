@@ -1,10 +1,10 @@
-from .models import User, Item, Store 
+from .models import User, Item, Store, Order
 
 from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import generics, status 
-from .serializers import RegisterUserSerializer, UserSerializer, LoginUserSerializer, StoreSerializer, ItemSerializer
+from .serializers import RegisterUserSerializer, UserSerializer, LoginUserSerializer, StoreSerializer, ItemSerializer, OrderSerializer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.reverse import reverse_lazy
@@ -26,7 +26,7 @@ class UserListView(viewsets.ReadOnlyModelViewSet):
     """
     View for listing all the user
     """
-    log.info("Extracting the customers list")
+    log.msg("Extracting the customers list")
     queryset = User.objects.filter(user_type="Customer")
     serializer_class = UserSerializer
 
@@ -38,7 +38,7 @@ class MerchantListView(viewsets.ReadOnlyModelViewSet):
     """
     View for listing all the Merchant with name
     """
-    log.info("Extracting the merchants list")
+    log.msg("Extracting the merchants list")
     queryset = User.objects.filter(user_type="Merchant")
     serializer_class = UserSerializer
 
@@ -48,7 +48,7 @@ Type : POST
 Registering new user.
 '''
 class UserRegistrationView(APIView):
-    log.info("Registering new user into the system")
+    log.msg("Registering new user into the system")
     serializer_class = RegisterUserSerializer
     authentication_classes = [JWTAuthentication,]
 
@@ -85,8 +85,6 @@ class UserLoginView(APIView):
         valid = serializer.is_valid(raise_exception=True)
 
         if valid:
-            log.msg("%s : logging into the system".format(request.data['username']))
-
             username = request.data['username']
             password = request.data['password']
             user = authenticate(username=username, password=password)
@@ -110,19 +108,38 @@ Type : GET
 Logging out current user.
 '''
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([AllowAny,])
 def UserLogout(request):
     request.session.flush()
     return Response(status=status.HTTP_200_OK)
 
 
+'''
+Type : POST || GET
+Crud operations on the stores
+'''
+class StoreViewSet(viewsets.ModelViewSet):
+    log.msg("Listing all avaliable stores")
+    authentication_classes = [JWTAuthentication,]
+    serializer_class = StoreSerializer
+    queryset = Store.objects.select_related('merchant').all()
+
+    def create(self, request, *args, **kwargs):
+
+        log.msg("Creating new store", req=request.data)
+
+        response = super().create(request, *args, **kwargs)
+        return response
+
+'''
+Type : POST || GET
+Crud operations on the Items
+'''
 class ItemViewSet(viewsets.ModelViewSet):
-    """
-    API view to perform CRUD operations on Item
-    """
+    log.msg("Listing all avaliable stores")
     authentication_classes = [JWTAuthentication,]
     serializer_class = ItemSerializer
-    queryset = Item.objects.select_related('stores').all()
+    queryset = Item.objects.select_related('store').all()
 
     def create(self, request, *args, **kwargs):
 
@@ -131,19 +148,11 @@ class ItemViewSet(viewsets.ModelViewSet):
         response = super().create(request, *args, **kwargs)
         return response
 
-class StoreViewSet(viewsets.ModelViewSet):
-    """
-    API view to perform CRUD operations on Store
-    """
-    log.info("Listing all avaliable stores")
+'''
+Type : POST || GET
+Creating Order 
+'''
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
     authentication_classes = [JWTAuthentication,]
-    serializer_class = StoreSerializer
-    queryset = Store.objects.select_related(
-        'merchant')
-
-    def create(self, request, *args, **kwargs):
-
-        log.msg("Creating new store", req=request.data)
-
-        response = super().create(request, *args, **kwargs)
-        return response
+    queryset = Order.objects.select_related('merchant', 'store').prefetch_related('items')
