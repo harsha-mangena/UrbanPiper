@@ -1,0 +1,11 @@
+{
+    "python.testing.pytestArgs": [
+        "foodordering"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.extraPaths": [
+        "./onboard"
+    ]
+}
