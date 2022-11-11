@@ -1,4 +1,3 @@
-from django.db import DataError
 from rest_framework import serializers
 from .models import User, Store, Item, Order
 from django.contrib.auth import authenticate, login
@@ -61,6 +60,7 @@ class LoginUserSerializer(serializers.ModelSerializer):
         
         if not user.is_active:
             raise serializers.ValidationError("User is not active")
+
         
         try:
             refresh = RefreshToken.for_user(user)
@@ -71,6 +71,7 @@ class LoginUserSerializer(serializers.ModelSerializer):
                 'refresh': refresh_token,
                 'username': user.username
             }
+
             return validation
 
         except User.DoesNotExist:
@@ -79,18 +80,7 @@ class LoginUserSerializer(serializers.ModelSerializer):
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = ('pk', 'name', 'store_address', 'latitude', 'longitude', 'is_active', 'merchant')
-
-    def validate(self, attrs):
-        merchant_id = attrs.get('merchant').id 
-
-        try:
-            is_valid_merchant = User.objects.get(user_type="Merchant", pk=merchant_id)
-
-        except:
-            raise serializers.ValidationError("User is not a merchant, Please contact admin")
-        
-        return attrs
+        fields = ('pk', 'name', 'store_address', 'latitude', 'longitude', 'is_active',)
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -103,13 +93,9 @@ class ItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ('pk', 'merchant','store', 'items', 'status', 'created_at')
-    
-    def validate(self, attrs):
-        validate_order(attrs)
-        
-        return attrs
+        fields = ('pk', 'store', 'items', 'status', 'created_at',)
 
+    
         
 
     

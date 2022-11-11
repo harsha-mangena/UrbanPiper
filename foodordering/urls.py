@@ -3,9 +3,9 @@ from .view import UserRegistrationView, UserListView, MerchantListView, UserLogi
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'items', ItemViewSet)
-router.register(r'stores', StoreViewSet)
-router.register(r'orders', OrderViewSet)
+router.register(r'items', ItemViewSet, basename="Item")
+router.register(r'stores', StoreViewSet, basename="Store")
+router.register(r'orders/', OrderViewSet , basename="Order")
 
 urlpatterns = [
     path('users/', UserListView.as_view({'get' : 'list'}), name="users"),

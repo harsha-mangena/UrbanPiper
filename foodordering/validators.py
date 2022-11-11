@@ -1,4 +1,5 @@
 import structlog
+from rest_framework import serializers
 
 logger = structlog.get_logger()
 
@@ -6,17 +7,16 @@ def validate_order(data):
     
     logger.msg('Validating the order items', data=data)
 
-    store_id = data['store'].id
+    store_id = data['items'].store.pk
 
-    items_store_id = [item.store.id for item in data['items']]
+    remaining_store_id = [item.store.pk for item in data['items'][1:]]
 
-    for item_store_id in items_store_id:
-        if item_store_id != store_id:
-            raise structlog.exceptions.InvalidStructureError(
-                message='Invalid item in the store',
-                data=data,
-                store_id=store_id,
-                item_store_id=item_store_id,
-            )
+    for pk in remaining_store_id:
+        if pk != store_id:
+            raise serializers.ValidationError(
+                {"items": "Item(s) do not belong to the selected Merchant."})
+
+
+
 
 

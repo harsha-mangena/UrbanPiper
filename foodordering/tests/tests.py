@@ -2,7 +2,7 @@ import pytest
 from pdb import Pdb
 from rest_framework.test import APIClient
 
-from foodordering.models import Item, Store, User
+from .models import Item, Store, User
 
 
 client = APIClient()
